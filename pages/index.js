@@ -3,10 +3,51 @@ import { Center, Footer, Tag, Showcase, DisplaySmall, DisplayMedium } from '../c
 import { titleIfy, slugify } from '../utils/helpers'
 import { fetchInventory } from '../utils/inventoryProvider'
 import CartLink from '../components/CartLink'
+import { getStatus } from '../services/RemoteFlagsApi';
+import { useState, useEffect } from 'react'
 
 const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
+  const [discountPrice, setDiscountPrice] = useState(null)
+  const [newSofas, setNewSofas] = useState(null)
+  const [renderClientSideComponent, setRenderClientSideComponent] = useState(false)
+
   const inventory = inventoryData.slice(0, 4)
   const categories = categoryData.slice(0, 2)
+
+  function fetchNewSofas() {
+    getStatus(
+      {
+        token: "CjwMyo3AT3HDXL9lW3TMX5ZPc_FVlQp5",
+        ownerId: "2288cb5f-d03f-457b-8eb2-afb0efd9081d",
+        flagId: "927f9ce1-34f2-43aa-830d-6549e69ec7e1",
+      },
+      (response) => {
+        setNewSofas(response.value == "On")
+      },
+      () => {
+        setNewSofas(false)
+      });
+  }
+
+  function fetchDiscountPrice() {
+    getStatus(
+      {
+        token: "CjwMyo3AT3HDXL9lW3TMX5ZPc_FVlQp5",
+        ownerId: "2288cb5f-d03f-457b-8eb2-afb0efd9081d",
+        flagId: "03b2accb-4a2b-4e8f-8173-d5e6e2c11177",
+      },
+      (response) => {
+        setDiscountPrice(response.value == "On")
+      },
+      () => {
+        setDiscountPrice(false)
+      });
+  }
+
+  useEffect(() => {
+    fetchNewSofas()
+    fetchDiscountPrice()
+  }, [])
 
   return (
     <>
@@ -17,6 +58,7 @@ const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
           <meta name="description" content="Jamstack ECommerce Next provides a way to quickly get up and running with a fully configurable ECommerce site using Next.js." />
           <meta property="og:title" content="Jamstack ECommerce" key="title" />
         </Head>
+
         <div className="bg-blue-300
         p-6 pb-10 smpb-6
         flex lg:flex-row flex-col">
@@ -25,20 +67,23 @@ const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
               year="2021"
               category="SOFAS"
             />
-            <Center
-              price="200"
-              title={inventory[2].name}
-              link={`/product/${slugify(inventory[2].name)}`}
-            />
+            {newSofas != null &&
+              <Center
+                price="200"
+                discountPrice={discountPrice}
+                title={inventory[2].name}
+                link={`/product/${slugify(inventory[2].name)}`}
+              />
+            }
             <Footer
               designer="Jason Bourne"
             />
           </div>
           <div className="flex flex-1 justify-center items-center relative">
-              <Showcase
-                imageSrc={inventory[2].image}
-              />
-              <div className="absolute
+            <Showcase
+              imageSrc={inventory[2].image}
+            />
+            <div className="absolute
               w-48 h-48 sm:w-72 sm:h-72 xl:w-88 xl:h-88
               bg-white z-0 rounded-full" />
           </div>
@@ -55,12 +100,13 @@ const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
           title={titleIfy(categories[0].name)}
           link={`/category/${slugify(categories[0].name)}`}
         />
-        <DisplayMedium
+        {newSofas && <DisplayMedium
           imageSrc={categories[1].image}
           subtitle={`${categories[1].itemCount} items`}
           title={titleIfy(categories[1].name)}
           link={`/category/${slugify(categories[1].name)}`}
         />
+        }
       </div>
       <div className="pt-10 pb-6 flex flex-col items-center">
         <h2 className="text-4xl mb-3">Trending Now</h2>
@@ -101,7 +147,7 @@ const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
 
 export async function getStaticProps() {
   const inventory = await fetchInventory()
-  
+
   const inventoryCategorized = inventory.reduce((acc, next) => {
     const categories = next.categories
     categories.forEach(c => {
@@ -121,11 +167,11 @@ export async function getStaticProps() {
     })
     return acc
   }, [])
-  
+
   return {
     props: {
       inventoryData: inventory,
-      categories: inventoryCategorized
+      categories: inventoryCategorized,
     }
   }
 }

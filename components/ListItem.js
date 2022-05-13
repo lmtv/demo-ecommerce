@@ -3,7 +3,7 @@ import Link from 'next/link'
 import DENOMINATION from '../utils/currencyProvider'
 import Image from './Image'
 
-const ListItem = ({ link, title, imageSrc, price }) =>  (
+const ListItem = ({ link, viewHeight, title, imageSrc, price }) =>  (
   <div className="
     w-100
     md:w-1/2
@@ -12,7 +12,7 @@ const ListItem = ({ link, title, imageSrc, price }) =>  (
   ">
     <Link href={`${link}`}>
       <a aria-label={title}>
-        <div className="h-72 flex justify-center items-center bg-light hover:bg-light-200">
+        <div className={`h-${viewHeight} flex justify-center items-center bg-light hover:bg-light-200`}>
           <div className="flex flex-column justify-center items-center">
             <Image alt={title} src={imageSrc} className="w-3/5" />
           </div>
