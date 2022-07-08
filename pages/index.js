@@ -6,28 +6,35 @@ import CartLink from '../components/CartLink'
 import { getStatus } from '../services/RemoteFlagsApi';
 import { useState, useEffect } from 'react'
 
+const heroSofas = {
+  default : 2,
+  brown : 6,
+  grey : 0,
+}
+
 const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
   const [discountPrice, setDiscountPrice] = useState(null)
-  const [newSofas, setNewSofas] = useState(null)
+  const [newSofas, setNewSofas] = useState(true)
+  const [heroSofa, setHeroSofa] = useState(null)
   const [renderClientSideComponent, setRenderClientSideComponent] = useState(false)
 
-  const inventory = inventoryData.slice(0, 4)
+  const inventory = inventoryData
   const categories = categoryData.slice(0, 2)
 
-  function fetchNewSofas() {
-    getStatus(
-      {
-        token: "CjwMyo3AT3HDXL9lW3TMX5ZPc_FVlQp5",
-        ownerId: "2288cb5f-d03f-457b-8eb2-afb0efd9081d",
-        flagId: "927f9ce1-34f2-43aa-830d-6549e69ec7e1",
-      },
-      (response) => {
-        setNewSofas(response.value == "On")
-      },
-      () => {
-        setNewSofas(false)
-      });
-  }
+//  function fetchNewSofas() {
+//    getStatus(
+//      {
+//        token: "CjwMyo3AT3HDXL9lW3TMX5ZPc_FVlQp5",
+//        ownerId: "2288cb5f-d03f-457b-8eb2-afb0efd9081d",
+//        flagId: "927f9ce1-34f2-43aa-830d-6549e69ec7e1",
+//      },
+//      (response) => {
+//        setNewSofas(response.value == "On")
+//      },
+//      () => {
+//        setNewSofas(false)
+//      });
+//  }
 
   function fetchDiscountPrice() {
     getStatus(
@@ -44,9 +51,25 @@ const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
       });
   }
 
+    function fetchHeroSofa() {
+      getStatus(
+        {
+          token: "CjwMyo3AT3HDXL9lW3TMX5ZPc_FVlQp5",
+          ownerId: "2288cb5f-d03f-457b-8eb2-afb0efd9081d",
+          flagId: "e7f1691f-1c3a-4967-bbbd-13f90fa2f354",
+        },
+        (response) => {
+          setHeroSofa(heroSofas[response.value]);
+        },
+        () => {
+          heroSofas["default"];
+        });
+    }
+
   useEffect(() => {
-    fetchNewSofas()
+    fetchHeroSofa()
     fetchDiscountPrice()
+    //fetchNewSofas()
   }, [])
 
   return (
@@ -54,25 +77,22 @@ const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
       <CartLink />
       <div className="w-full">
         <Head>
-          <title>Jamstack ECommerce</title>
-          <meta name="description" content="Jamstack ECommerce Next provides a way to quickly get up and running with a fully configurable ECommerce site using Next.js." />
-          <meta property="og:title" content="Jamstack ECommerce" key="title" />
+          <title>Not a Sofa store</title>
+          <meta name="description" content="Not a Sofa - RemoteFlags demo for a sample e-commerce platform based on Jamstack Ecommerce using Next.js." />
+          <meta property="og:title" content="Not a Sofa store" key="title" />
         </Head>
-
-        <div className="bg-blue-300
-        p-6 pb-10 smpb-6
-        flex lg:flex-row flex-col">
+        <div className="bg-blue-300 p-6 pb-10 smpb-6 flex lg:flex-row flex-col">
           <div className="pt-4 pl-2 sm:pt-12 sm:pl-12 flex flex-col">
             <Tag
-              year="2021"
+              year="2022"
               category="SOFAS"
             />
-            {newSofas != null &&
+            { heroSofa != null &&
               <Center
-                price="200"
+                price={inventory[heroSofa].price}
                 discountPrice={discountPrice}
-                title={inventory[2].name}
-                link={`/product/${slugify(inventory[2].name)}`}
+                title={inventory[heroSofa].name}
+                link={`/product/${slugify(inventory[heroSofa].name)}`}
               />
             }
             <Footer
@@ -80,9 +100,11 @@ const Home = ({ inventoryData = [], categories: categoryData = [] }) => {
             />
           </div>
           <div className="flex flex-1 justify-center items-center relative">
-            <Showcase
-              imageSrc={inventory[2].image}
-            />
+            { heroSofa != null &&
+              <Showcase
+                imageSrc={inventory[heroSofa].image}
+              />
+            }
             <div className="absolute
               w-48 h-48 sm:w-72 sm:h-72 xl:w-88 xl:h-88
               bg-white z-0 rounded-full" />
